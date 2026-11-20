@@ -13,11 +13,14 @@ import {
   LetterCard,
   LyricLines,
   NotebookMemo,
+  OilPaintTexture,
   RainRippleButton,
+  RelicScene,
   SakuraThiefOverlay,
   TrainWindowFrame,
   TwilightSky,
   TypewriterCensorText,
+  WhisperText,
   WhiteLilySeal,
   useAkaneTheme,
   type FountainInk,
@@ -124,27 +127,17 @@ function SakuraLayers({
   children: ReactNode;
 }) {
   const active = density !== "off";
-  const petals = density === "off" ? "light" : density;
+  const petalCount = density === "off" ? 0 : density === "light" ? 8 : density === "normal" ? 20 : 48;
 
   return (
     <SakuraThiefOverlay
       active={active}
-      density={petals}
-      className="sakura-layer sakura-layer--far"
+      density="gust"
+      petalCount={petalCount}
+      oilPaint={false}
+      className="sakura-layer"
     >
-      <SakuraThiefOverlay
-        active={active}
-        density={petals}
-        className="sakura-layer sakura-layer--mid"
-      >
-        <SakuraThiefOverlay
-          active={active}
-          density={petals}
-          className="sakura-layer sakura-layer--near"
-        >
-          {children}
-        </SakuraThiefOverlay>
-      </SakuraThiefOverlay>
+      {children}
     </SakuraThiefOverlay>
   );
 }
@@ -167,7 +160,7 @@ function ChapterHeading({ chapter, id }: { chapter: Chapter; id: string }) {
 
 function Site() {
   const theme = useAkaneTheme();
-  const phase = theme?.phase ?? "dusk";
+  const phase = (theme?.phase ?? "dusk") as Phase;
   const setPhase = theme?.setPhase;
   useScrollReveal();
 
@@ -304,7 +297,8 @@ function Site() {
   const visibleWorks = showAllWorks ? WORKS : WORKS.slice(0, 6);
 
   return (
-    <TwilightSky className="portfolio-sky">
+    <TwilightSky className="portfolio-sky" oilPaint={false}>
+      <OilPaintTexture variant="sky" intensity="subtle" className="sky-oil" />
       <Suspense fallback={null}>
         <ThreePaperBook phase={phase} />
       </Suspense>
@@ -383,11 +377,10 @@ function Site() {
                   </RainRippleButton>
                 </div>
                 <div className="hero-whisper">
-                  <TypewriterCensorText
-                    text={
-                      "目標は[[世界のITの頂点]]。けれど測っているのは、届く距離です。"
-                    }
-                    speedMs={48}
+                  <WhisperText
+                    text="目標は世界のITの頂点。けれど測っているのは、届く距離です。"
+                    variant="telepath"
+                    speedMs={42}
                   />
                 </div>
               </div>
@@ -395,7 +388,7 @@ function Site() {
                 className="panel hero-aside"
                 aria-label="このページの手引き"
               >
-                <p className="vertical-quote">形を守り、中身を作り替える</p>
+                <p className="hero-quote">形を守り、中身を作り替える</p>
                 <p className="hero-aside__text">
                   四つの栞で空の時間が変わります。雨、茜、第一夜、夜明け。
                 </p>
@@ -412,7 +405,11 @@ function Site() {
             <div className="two-column">
               <TrainWindowFrame moving>
                 <GhostFlowerRefraction intensity="calm" afterimage caustics>
-                  <LetterCard date="経歴 — 事実だけ" signature="Tatsuya">
+                  <LetterCard
+                    date="経歴 — 事実だけ"
+                    signature="Tatsuya"
+                    oilPaint
+                  >
                     <p>事実だけを書きます。</p>
                     <ul className="fact-list">
                       {ABOUT_FACTS.map((fact) => (
@@ -451,55 +448,58 @@ function Site() {
             aria-labelledby="philosophy-title"
           >
             <ChapterHeading id="philosophy-title" chapter={CHAPTERS[2]} />
-            <div className="reading-stage">
-              <div className="control-row reading-controls">
-                <RainRippleButton
-                  onClick={() => setVerticalCard((value) => !value)}
-                >
-                  {verticalCard ? "便箋: 横書き" : "便箋: 縦書き"}
-                </RainRippleButton>
-                <RainRippleButton onClick={cycleSakura}>
-                  {SAKURA_LABEL[sakura]}
-                </RainRippleButton>
-              </div>
-              <TrainWindowFrame moving>
-                <GhostFlowerRefraction
-                  key={refraction}
-                  intensity={refraction}
-                  afterimage
-                  caustics
-                >
-                  <LetterCard
-                    date="第一夜 — 朗読"
-                    signature={
-                      memoText ? "あなたの一行" : "ずっと待っていました"
-                    }
-                    vertical={verticalCard}
+            <RelicScene variant="memories" count={14} className="reading-relic">
+              <div className="reading-stage">
+                <div className="control-row reading-controls">
+                  <RainRippleButton
+                    onClick={() => setVerticalCard((value) => !value)}
                   >
-                    {memoText ? (
-                      <TypewriterCensorText
-                        key={`memo-in-letter-${memoKey}`}
-                        text={memoText}
-                        speedMs={42}
-                      />
-                    ) : (
-                      <LyricLines
-                        lines={LYRICS}
-                        currentTime={elapsed}
-                        vertical={verticalCard}
-                        onLineSelect={(time) => setElapsed(time)}
-                      />
-                    )}
-                    <div className="seal-row">
-                      <WhiteLilySeal
-                        caption={memoText ? "歌詞へ戻る" : "白い百合を一輪"}
-                        onClick={resetMemo}
-                      />
-                    </div>
-                  </LetterCard>
-                </GhostFlowerRefraction>
-              </TrainWindowFrame>
-            </div>
+                    {verticalCard ? "便箋: 横書き" : "便箋: 縦書き"}
+                  </RainRippleButton>
+                  <RainRippleButton onClick={cycleSakura}>
+                    {SAKURA_LABEL[sakura]}
+                  </RainRippleButton>
+                </div>
+                <TrainWindowFrame moving>
+                  <GhostFlowerRefraction
+                    key={refraction}
+                    intensity={refraction}
+                    afterimage
+                    caustics
+                  >
+                    <LetterCard
+                      date="第一夜 — 朗読"
+                      signature={
+                        memoText ? "あなたの一行" : "ずっと待っていました"
+                      }
+                      vertical={verticalCard}
+                      oilPaint
+                    >
+                      {memoText ? (
+                        <TypewriterCensorText
+                          key={`memo-in-letter-${memoKey}`}
+                          text={memoText}
+                          speedMs={42}
+                        />
+                      ) : (
+                        <LyricLines
+                          lines={LYRICS}
+                          currentTime={elapsed}
+                          vertical={verticalCard}
+                          onLineSelect={(time) => setElapsed(time)}
+                        />
+                      )}
+                      <div className="seal-row">
+                        <WhiteLilySeal
+                          caption={memoText ? "歌詞へ戻る" : "白い百合を一輪"}
+                          onClick={resetMemo}
+                        />
+                      </div>
+                    </LetterCard>
+                  </GhostFlowerRefraction>
+                </TrainWindowFrame>
+              </div>
+            </RelicScene>
 
             <div className="philosophy-grid">
               {PHILOSOPHY.map((item, index) => (
@@ -563,7 +563,7 @@ function Site() {
                 </div>
               </div>
               <aside className="panel memo-aside">
-                <p className="vertical-quote">書くことは、残すこと。</p>
+                <p className="hero-quote">書くことは、残すこと。</p>
                 <p className="caption">
                   インクは三色。ブルーブラック、茜、セピア。明かしたくない場所だけ、黒く塗ります。
                 </p>
@@ -705,14 +705,20 @@ function Site() {
             aria-labelledby="colophon-title"
           >
             <ChapterHeading id="colophon-title" chapter={CHAPTERS[7]} />
-            <LetterCard date="このサイトについて" signature="Tatsuya">
-              <ul className="fact-list">
-                {COLOPHON.map((fact) => (
-                  <li key={fact}>{fact}</li>
-                ))}
-              </ul>
-              <p>連絡手段はいまは GitHub へのリンクだけです。</p>
-            </LetterCard>
+            <RelicScene variant="telepath" count={12} className="end-relic">
+              <LetterCard
+                date="このサイトについて"
+                signature="Tatsuya"
+                oilPaint
+              >
+                <ul className="fact-list">
+                  {COLOPHON.map((fact) => (
+                    <li key={fact}>{fact}</li>
+                  ))}
+                </ul>
+                <p>連絡手段はいまは GitHub へのリンクだけです。</p>
+              </LetterCard>
+            </RelicScene>
             <div className="end-seal">
               <WhiteLilySeal
                 caption="参道のはじまりへ"

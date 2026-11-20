@@ -78,8 +78,8 @@ function createWoodTexture() {
 
   if (ctx) {
     const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, "#49352b");
-    gradient.addColorStop(1, "#2d211c");
+    gradient.addColorStop(0, "#3b2b24");
+    gradient.addColorStop(1, "#251b17");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -193,22 +193,22 @@ export default function ThreePaperBook({ phase }: { phase: Phase }) {
     const pageGeometry = createPageGeometry();
 
     const book = new THREE.Group();
-    book.position.set(0, DESK_Y + 0.34, 0);
+    book.position.set(0, DESK_Y + 0.12, 0);
     book.rotation.x = -Math.PI / 2 + 0.02;
     const rightPages: THREE.Mesh[] = [];
     const leftPages: THREE.Mesh[] = [];
 
     for (let i = 0; i < PAGE_COUNT; i += 1) {
-      const depth = -0.35 - i * 0.022;
-      const lift = -0.05 + Math.sin(i * 1.3) * 0.025;
+      const depth = -0.05 + Math.sin(i * 1.3) * 0.025;
+      const lift = 0.01 + i * 0.005;
 
       const right = new THREE.Mesh(pageGeometry, paperMaterial);
-      right.position.set(0.12 + i * 0.004, lift, depth);
+      right.position.set(0.12 + i * 0.004, depth, lift);
       rightPages.push(right);
       book.add(right);
 
       const left = new THREE.Mesh(pageGeometry, paperMaterial);
-      left.position.set(-0.12 - i * 0.004, lift, depth);
+      left.position.set(-0.12 - i * 0.004, depth, lift);
       left.rotation.y = -Math.PI;
       leftPages.push(left);
       book.add(left);
