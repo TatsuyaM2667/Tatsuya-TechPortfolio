@@ -1,4 +1,6 @@
-export type Phase = "dusk" | "twilight" | "night" | "dawn";
+import type { SkyPhase } from "@tatsuyamiura2667/akane-lib";
+
+export type Phase = SkyPhase;
 
 export interface Chapter {
   id: string;
@@ -421,6 +423,15 @@ export const INFLUENCE_ELEMENTS = [
     element: "変わるものと変わらないもの",
     use: "遷宮。見た目は作り替え、内容は守ります。",
   },
+];
+
+export const MOTIF_GLOSSARY = [
+  { id: "paper", label: "紙・手紙・活字" },
+  { id: "blueNight", label: "青・夜・月" },
+  { id: "rainGlass", label: "雨・ガラス・波紋" },
+  { id: "flowerPetal", label: "花・花びら" },
+  { id: "linePrint", label: "線・網点・滲み" },
+  { id: "filmProcess", label: "グレイン・ビネット" },
 ];
 
 export const COLOPHON = [

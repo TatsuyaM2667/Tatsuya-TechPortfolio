@@ -10,16 +10,22 @@ import {
   AkaneThemeProvider,
   BookmarkRibbon,
   GhostFlowerRefraction,
+  HalftoneDots,
+  KomorebiLight,
   LetterCard,
   LyricLines,
+  MoonHalo,
   NotebookMemo,
   OilPaintTexture,
+  PaperTexture,
   RainRippleButton,
   RelicScene,
   SakuraThiefOverlay,
+  SourceChip,
   TrainWindowFrame,
   TwilightSky,
   TypewriterCensorText,
+  TypographicStamp,
   WhisperText,
   WhiteLilySeal,
   useAkaneTheme,
@@ -34,6 +40,7 @@ import {
   INFLUENCE_ELEMENTS,
   LOG,
   LYRICS,
+  MOTIF_GLOSSARY,
   PHILOSOPHY,
   PROFILE,
   SKILLS,
@@ -77,17 +84,33 @@ interface MemoReceipt {
 }
 
 const PHASE_LABEL: Record<Phase, string> = {
-  dusk: "夕凪 / 雨",
-  twilight: "茜さす",
-  night: "第一夜",
   dawn: "夜明け",
+  morning: "朝の光",
+  day: "昼",
+  dusk: "夕凪 / 雨",
+  golden: "茜さす",
+  twilight: "宵の茜",
+  night: "第一夜",
+  midnight: "深夜",
 };
+
+const SCROLL_PHASES: Phase[] = [
+  "dusk",
+  "golden",
+  "twilight",
+  "night",
+  "midnight",
+  "dawn",
+  "morning",
+  "day",
+];
 
 const PHASE_RIBBONS: { phase: Phase; chapter: string; title: string; progress: number }[] = [
   { phase: "dusk", chapter: "一", title: "夕凪", progress: 0 },
-  { phase: "twilight", chapter: "二", title: "茜さす", progress: 0.34 },
-  { phase: "night", chapter: "三", title: "第一夜", progress: 0.66 },
-  { phase: "dawn", chapter: "四", title: "夜明け", progress: 1 },
+  { phase: "twilight", chapter: "二", title: "茜さす", progress: 0.3 },
+  { phase: "night", chapter: "三", title: "第一夜", progress: 0.44 },
+  { phase: "dawn", chapter: "四", title: "夜明け", progress: 0.68 },
+  { phase: "day", chapter: "終", title: "昼", progress: 1 },
 ];
 
 const SAKURA_LABEL: Record<SakuraDensity, string> = {
@@ -160,7 +183,7 @@ function ChapterHeading({ chapter, id }: { chapter: Chapter; id: string }) {
 
 function Site() {
   const theme = useAkaneTheme();
-  const phase = (theme?.phase ?? "dusk") as Phase;
+  const phase = theme?.phase ?? "dusk";
   const setPhase = theme?.setPhase;
   useScrollReveal();
 
@@ -170,9 +193,12 @@ function Site() {
       frame = 0;
       const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
       const progress = window.scrollY / maxScroll;
-      const next: Phase =
-        progress < 0.24 ? "dusk" : progress < 0.5 ? "twilight" : progress < 0.78 ? "night" : "dawn";
-      setPhase?.(next);
+      const step = 1 / SCROLL_PHASES.length;
+      const index = Math.min(
+        SCROLL_PHASES.length - 1,
+        Math.floor(progress / step),
+      );
+      setPhase?.(SCROLL_PHASES[index]);
     };
     const onScroll = () => {
       if (!frame) frame = window.requestAnimationFrame(apply);
@@ -199,6 +225,35 @@ function Site() {
   const [verticalCard, setVerticalCard] = useState(false);
   const [showAllWorks, setShowAllWorks] = useState(false);
   const [expandedWork, setExpandedWork] = useState<string | null>(null);
+
+  useEffect(() => {
+    const area = document.querySelector<HTMLTextAreaElement>(
+      ".akane-notebook__textarea",
+    );
+    area?.setAttribute("aria-label", "窓の向こうに触れ、一行を書き留める");
+
+    const lines = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        ".akane-lyrics--interactive .akane-lyrics__line",
+      ),
+    );
+    lines.forEach((line) => {
+      line.tabIndex = 0;
+      line.setAttribute("role", "button");
+    });
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const target = event.target as HTMLElement;
+      if (target.matches(".akane-lyrics--interactive .akane-lyrics__line")) {
+        event.preventDefault();
+        target.click();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [memoText, verticalCard]);
 
   const jump = useCallback((id: string) => smoothScroll(id), []);
 
@@ -342,6 +397,7 @@ function Site() {
                   ? "ribbon-rail__item is-active"
                   : "ribbon-rail__item"
               }
+              aria-current={phase === ribbon.phase ? "step" : undefined}
             >
               <BookmarkRibbon
                 chapter={ribbon.chapter}
@@ -380,6 +436,7 @@ function Site() {
                   <WhisperText
                     text="目標は世界のITの頂点。けれど測っているのは、届く距離です。"
                     variant="telepath"
+                    animation="wave"
                     speedMs={42}
                   />
                 </div>
@@ -388,9 +445,10 @@ function Site() {
                 className="panel hero-aside"
                 aria-label="このページの手引き"
               >
+                <MoonHalo size={72} glow={0.35} />
                 <p className="hero-quote">形を守り、中身を作り替える</p>
                 <p className="hero-aside__text">
-                  四つの栞で空の時間が変わります。雨、茜、第一夜、夜明け。
+                  五つの栞で空の時間が変わります。雨、茜、第一夜、夜明け、昼。
                 </p>
                 <WhiteLilySeal
                   caption="白い百合を一輪"
@@ -450,6 +508,7 @@ function Site() {
             <ChapterHeading id="philosophy-title" chapter={CHAPTERS[2]} />
             <RelicScene variant="memories" count={14} className="reading-relic">
               <div className="reading-stage">
+                <KomorebiLight spots={6} direction="left" />
                 <div className="control-row reading-controls">
                   <RainRippleButton
                     onClick={() => setVerticalCard((value) => !value)}
@@ -531,7 +590,8 @@ function Site() {
           >
             <ChapterHeading id="notebook-title" chapter={CHAPTERS[3]} />
             <div className="notebook-grid">
-              <div className="memo-block panel">
+              <div className="memo-block panel paper-panel">
+                <PaperTexture tone="washi" />
                 <div>
                   <h3>朝の手帳 — あなたの一行</h3>
                   <p className="caption">
@@ -547,7 +607,7 @@ function Site() {
                   onSave={handleSave}
                 />
                 {apiNote && (
-                  <p className="api-note" role="status">
+                  <p className="api-note" role="status" aria-live="polite">
                     {apiNote}
                     {receipt &&
                       ` 預かり ${receipt.id.slice(0, 8)} / ${new Date(receipt.receivedAt).toLocaleTimeString("ja-JP")}`}
@@ -563,7 +623,13 @@ function Site() {
                 </div>
               </div>
               <aside className="panel memo-aside">
-                <p className="hero-quote">書くことは、残すこと。</p>
+                <WhisperText
+                  className="memo-whisper"
+                  text="書くことは、残すこと。"
+                  variant="envy"
+                  animation="wave"
+                  speedMs={38}
+                />
                 <p className="caption">
                   インクは三色。ブルーブラック、茜、セピア。明かしたくない場所だけ、黒く塗ります。
                 </p>
@@ -576,7 +642,8 @@ function Site() {
 
           <section id="works" className="chapter" aria-labelledby="works-title">
             <ChapterHeading id="works-title" chapter={CHAPTERS[4]} />
-            <div className="panel works-toolbar">
+            <div className="panel works-toolbar textured-panel">
+              <HalftoneDots angle={0} density={5} tone="ink" />
               <p>
                 {worksFeed
                   ? `Hono API から ${worksFeed.total} 件の作品が届きました。`
@@ -657,7 +724,15 @@ function Site() {
               <ol className="log-list">
                 {LOG.map((entry) => (
                   <li key={entry.date}>
-                    <time>{entry.date}</time>
+                    <time
+                      dateTime={
+                        /^\d{4}-\d{2}(-\d{2})?$/.test(entry.date)
+                          ? entry.date
+                          : undefined
+                      }
+                    >
+                      {entry.date}
+                    </time>
                     <span>{entry.text}</span>
                   </li>
                 ))}
@@ -695,6 +770,13 @@ function Site() {
                 <p className="skill-after">
                   写しているのは、色の考え方、光の扱い、余白、文字の組み方、動きのテンポ、語りの形式です。
                 </p>
+                <h3>参照している六つの系統</h3>
+                <ul className="motif-list">
+                  {MOTIF_GLOSSARY.map((motif) => (
+                    <li key={motif.id}>{motif.label}</li>
+                  ))}
+                </ul>
+                <SourceChip label="抽象モチーフとして整理" tier="secondary" />
               </div>
             </div>
           </section>
@@ -719,7 +801,21 @@ function Site() {
                 <p>連絡手段はいまは GitHub へのリンクだけです。</p>
               </LetterCard>
             </RelicScene>
+            <div className="source-row">
+              <SourceChip
+                label="akane-lib v0.4.9"
+                tier="primary"
+                href="https://github.com/TatsuyaM2667/akane-lib"
+              />
+              <SourceChip
+                label="この実装"
+                tier="secondary"
+                href="https://github.com/TatsuyaM2667/Tatsuya-TechPortfolio"
+              />
+              <SourceChip label="歌詞・映像は複製せず抽象化" tier="secondary" />
+            </div>
             <div className="end-seal">
+              <TypographicStamp label="終" tone="sepia" />
               <WhiteLilySeal
                 caption="参道のはじまりへ"
                 onClick={() => jump("prologue")}

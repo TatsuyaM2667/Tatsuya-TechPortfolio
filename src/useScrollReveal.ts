@@ -48,10 +48,12 @@ export function useScrollReveal() {
     const show = (element: HTMLElement) => {
       if (revealed.has(element) || scattering.has(element)) return;
 
+      const order = orderOf(element);
       anime.remove(element);
       scattering.delete(element);
       element.classList.remove("is-scattering");
       element.classList.add("is-revealed");
+      element.style.setProperty("--reveal-order", String(order));
       element.style.opacity = "0";
       element.style.transform = "translateY(22px) scale(0.96)";
       element.style.letterSpacing = "";
@@ -60,10 +62,18 @@ export function useScrollReveal() {
       anime({
         targets: element,
         opacity: [0, 1],
-        translateY: [22, 0],
-        scale: [0.96, 1],
-        duration: 820,
-        delay: orderOf(element) * 30,
+        translateY: [
+          { value: 22, duration: 0 },
+          { value: -6, duration: 430, easing: "easeOutQuad" },
+          { value: 0, duration: 430, easing: "easeOutBack" },
+        ],
+        scale: [
+          { value: 0.96, duration: 0 },
+          { value: 1.012, duration: 520, easing: "easeOutQuad" },
+          { value: 1, duration: 340, easing: "easeOutQuad" },
+        ],
+        duration: 900,
+        delay: order * 30,
         easing: "easeOutCubic",
       });
     };
@@ -119,6 +129,10 @@ export function useScrollReveal() {
       if (element.closest(".akane-whisper, .akane-relic, .akane-oil")) return;
       registered.add(element);
       element.setAttribute("data-reveal", "");
+      (element as HTMLElement).style.setProperty(
+        "--reveal-order",
+        String(orderOf(element as HTMLElement)),
+      );
 
       const rect = element.getBoundingClientRect();
       if (rect.top < window.innerHeight && rect.bottom > 0) show(element as HTMLElement);

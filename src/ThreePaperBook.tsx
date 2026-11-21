@@ -3,10 +3,14 @@ import * as THREE from "three";
 import type { Phase } from "./data";
 
 const LIGHT_COLORS: Record<Phase, number> = {
+  dawn: 0xfff3df,
+  morning: 0xffe7c4,
+  day: 0xf3f0df,
   dusk: 0xffd2b8,
+  golden: 0xffc09a,
   twilight: 0xffb59a,
   night: 0xdfe8ff,
-  dawn: 0xfff3df,
+  midnight: 0xb9c8e8,
 };
 
 const PAGE_COUNT = 9;
@@ -138,6 +142,7 @@ export default function ThreePaperBook({ phase }: { phase: Phase }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const initialPhase = useRef(phase);
   const lightRef = useRef<THREE.DirectionalLight | null>(null);
+  const renderRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -151,7 +156,7 @@ export default function ThreePaperBook({ phase }: { phase: Phase }) {
     }
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 0);
 
     const scene = new THREE.Scene();
@@ -226,7 +231,7 @@ export default function ThreePaperBook({ phase }: { phase: Phase }) {
     });
     const petals: PetalState[] = [];
 
-    for (let i = 0; i < 64; i += 1) {
+    for (let i = 0; i < 40; i += 1) {
       const mesh = new THREE.Mesh(petalGeometry, petalMaterial);
       mesh.position.set((Math.random() - 0.5) * 9, 0.4 + Math.random() * 6, (Math.random() - 0.5) * 6);
       mesh.scale.setScalar(0.4 + Math.random() * 0.35);
@@ -240,23 +245,38 @@ export default function ThreePaperBook({ phase }: { phase: Phase }) {
       scene.add(mesh);
     }
 
+    let maxScroll = 1;
+    const updateScrollHeight = () => {
+      maxScroll = Math.max(
+        1,
+        document.documentElement.scrollHeight - window.innerHeight,
+      );
+    };
+    const render = () => renderer.render(scene, camera);
+
     const resize = () => {
       const width = window.innerWidth;
       const height = window.innerHeight;
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      updateScrollHeight();
+      render();
     };
 
+    renderRef.current = render;
     resize();
     window.addEventListener("resize", resize);
+    const scrollObserver =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(updateScrollHeight);
+    scrollObserver?.observe(document.body);
 
     const clock = new THREE.Clock();
     let frame = 0;
     const tick = () => {
       const elapsed = clock.getElapsedTime();
-      const doc = document.documentElement;
-      const maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
       const progress = THREE.MathUtils.clamp(window.scrollY / maxScroll, 0, 1);
 
       rightPages.forEach((page, index) => {
@@ -284,7 +304,7 @@ export default function ThreePaperBook({ phase }: { phase: Phase }) {
         mesh.rotation.z += 0.002 + index * 0.00001;
       });
 
-      renderer.render(scene, camera);
+      render();
       if (!reduced) frame = window.requestAnimationFrame(tick);
     };
     tick();
@@ -292,6 +312,8 @@ export default function ThreePaperBook({ phase }: { phase: Phase }) {
     return () => {
       window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", resize);
+      scrollObserver?.disconnect();
+      renderRef.current = null;
       deskGeometry.dispose();
       deskMaterial.dispose();
       woodTexture.dispose();
@@ -309,6 +331,7 @@ export default function ThreePaperBook({ phase }: { phase: Phase }) {
 
   useEffect(() => {
     lightRef.current?.color.setHex(LIGHT_COLORS[phase]);
+    renderRef.current?.();
   }, [phase]);
 
   return <canvas className="three-field" ref={canvasRef} aria-hidden="true" />;

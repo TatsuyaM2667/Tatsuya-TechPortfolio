@@ -14,7 +14,7 @@
   --page-panel: rgba(14, 20, 32, 0.8);
 }
 
-[data-akane-phase='dawn'] {
+[data-akane-phase='dawn'], [data-akane-phase='morning'], [data-akane-phase='day'], [data-akane-phase='golden'] {
   color-scheme: light;
   --akane-paper: #e6edf6;
   --akane-paper-border: #c3d1e2;
@@ -54,16 +54,16 @@ button {
 .three-field {
   position: fixed;
   inset: 0;
-  z-index: -3;
+  z-index: -2;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: 0.9;
+  opacity: 1;
 }
 
 .sky-oil.akane-oil {
   position: fixed;
-  z-index: -2;
+  z-index: -3;
   --akane-oil-base-opacity: 0.42;
 }
 
@@ -92,7 +92,10 @@ button {
   );
 }
 
-[data-akane-phase='dawn'] .portfolio-sky .akane-sky__content::before {
+[data-akane-phase='dawn'] .portfolio-sky .akane-sky__content::before,
+[data-akane-phase='morning'] .portfolio-sky .akane-sky__content::before,
+[data-akane-phase='day'] .portfolio-sky .akane-sky__content::before,
+[data-akane-phase='golden'] .portfolio-sky .akane-sky__content::before {
   background: linear-gradient(
     90deg,
     rgba(226, 234, 244, 0.46) 0%,
@@ -110,12 +113,32 @@ html.js-reveal [data-reveal] {
   will-change: opacity, transform, filter;
 }
 
-html[data-akane-phase='dawn'].js-reveal [data-reveal] {
+html[data-akane-phase='dawn'].js-reveal [data-reveal],
+html[data-akane-phase='morning'].js-reveal [data-reveal],
+html[data-akane-phase='day'].js-reveal [data-reveal],
+html[data-akane-phase='golden'].js-reveal [data-reveal] {
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.55);
 }
 
 html.js-reveal [data-reveal].is-revealed {
   filter: blur(0);
+  animation: water-settle 900ms ease-out both;
+  animation-delay: calc(var(--reveal-order, 0) * 30ms);
+}
+
+@keyframes water-settle {
+  0% {
+    filter: blur(6px);
+    text-shadow: 0 8px 18px rgba(6, 10, 18, 0.38);
+  }
+  55% {
+    filter: blur(0);
+    text-shadow: 0 -5px 10px currentColor, 0 6px 14px rgba(6, 10, 18, 0.24);
+  }
+  100% {
+    filter: blur(0);
+    text-shadow: 0 0 0 transparent;
+  }
 }
 
 html.js-reveal [data-reveal].is-scattering {
@@ -223,7 +246,7 @@ body::before {
   border: 1px solid var(--page-accent);
   border-radius: 50%;
   color: var(--page-accent);
-  font-size: 0.8rem;
+  font-size: 0.88rem;
 }
 
 .chapter-nav {
@@ -233,7 +256,7 @@ body::before {
   overflow-x: auto;
   scrollbar-width: none;
   white-space: nowrap;
-  font-size: 0.82rem;
+  font-size: 0.9rem;
 }
 
 .chapter-nav::-webkit-scrollbar {
@@ -259,14 +282,14 @@ body::before {
 
 .chapter-nav span {
   color: var(--page-accent);
-  font-size: 0.7rem;
+  font-size: 0.9rem;
 }
 
 .masthead__phase {
   flex: none;
   margin: 0;
   color: var(--page-muted);
-  font-size: 0.78rem;
+  font-size: 0.94rem;
   letter-spacing: 0.12em;
 }
 
@@ -293,9 +316,27 @@ body::before {
   transform: translateX(5px);
 }
 
+.ribbon-rail .akane-bookmark {
+  flex-direction: row;
+  gap: 0.35rem;
+  padding: 0.7rem 0.85rem 1.1rem;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
+  letter-spacing: 0.08em;
+}
+
+.ribbon-rail .akane-bookmark__chapter {
+  margin-left: 0;
+  font-size: 0.82rem;
+}
+
+.ribbon-rail .akane-bookmark__title {
+  font-size: 0.9rem;
+}
+
 .ribbon-rail__reset .akane-ripple-btn {
   padding: 0.55rem 0.75rem;
-  font-size: 0.72rem;
+  font-size: 0.92rem;
   letter-spacing: 0.06em;
   writing-mode: horizontal-tb;
 }
@@ -339,14 +380,14 @@ body::before {
   margin: 0;
   font-size: clamp(1.6rem, 3vw, 2.4rem);
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.14em;
 }
 
 .chapter-heading__aside {
   margin: 0.35rem 0 0;
   color: var(--page-accent);
-  font-size: 0.78rem;
-  letter-spacing: 0.24em;
+  font-size: 0.94rem;
+  letter-spacing: 0.12em;
 }
 
 .chapter-heading__verse {
@@ -378,6 +419,29 @@ body::before {
   transition: background-color 2.2s ease, border-color 2.2s ease, color 1.2s ease;
 }
 
+.paper-panel,
+.textured-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.paper-panel > .akane-paper-tex,
+.textured-panel > .akane-halftone {
+  opacity: 0.42;
+}
+
+.paper-panel > :not(.akane-paper-tex),
+.textured-panel > :not(.akane-halftone) {
+  position: relative;
+  z-index: 1;
+}
+
+.paper-panel .akane-notebook {
+  background-color: transparent;
+  box-shadow: none;
+}
+
 .akane-letter,
 .akane-notebook {
   transition: background-color 2.2s ease, border-color 2.2s ease, color 1.2s ease;
@@ -386,8 +450,8 @@ body::before {
 .eyebrow {
   margin: 0 0 1.2rem;
   color: var(--page-accent);
-  font-size: 0.8rem;
-  letter-spacing: 0.34em;
+  font-size: 0.88rem;
+  letter-spacing: 0.22em;
 }
 
 .hero-grid {
@@ -483,18 +547,39 @@ body::before {
   letter-spacing: 0.1em;
 }
 
-[data-akane-phase='dawn'] .hero-whisper .akane-whisper {
+[data-akane-phase='dawn'] .hero-whisper .akane-whisper,
+[data-akane-phase='morning'] .hero-whisper .akane-whisper,
+[data-akane-phase='day'] .hero-whisper .akane-whisper,
+[data-akane-phase='golden'] .hero-whisper .akane-whisper,
+[data-akane-phase='dawn'] .memo-whisper.akane-whisper,
+[data-akane-phase='morning'] .memo-whisper.akane-whisper,
+[data-akane-phase='day'] .memo-whisper.akane-whisper,
+[data-akane-phase='golden'] .memo-whisper.akane-whisper {
   color: #243a52;
   text-shadow: none;
 }
 
 .hero-aside {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1.6rem;
+  overflow: hidden;
   text-align: center;
+}
+
+.hero-aside .akane-moon-halo {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  opacity: 0.38;
+}
+
+.hero-aside > :not(.akane-moon-halo) {
+  position: relative;
+  z-index: 1;
 }
 
 .hero-quote {
@@ -506,11 +591,18 @@ body::before {
   text-align: center;
 }
 
+.memo-whisper.akane-whisper {
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  line-height: 1.9;
+  text-align: center;
+}
+
 .hero-aside__text {
   max-width: 18ch;
   margin: 0;
   color: var(--page-muted);
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   line-height: 2;
 }
 
@@ -533,7 +625,18 @@ body::before {
 }
 
 .reading-stage {
+  position: relative;
   margin-bottom: 2.5rem;
+  isolation: isolate;
+}
+
+.reading-stage > .akane-komorebi {
+  opacity: 0.42;
+}
+
+.reading-stage > :not(.akane-komorebi) {
+  position: relative;
+  z-index: 1;
 }
 
 .reading-controls {
@@ -580,7 +683,7 @@ body::before {
   color: var(--page-accent);
   font-size: 1.05rem;
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
 }
 
 .note-stack h3:not(:first-child) {
@@ -601,7 +704,7 @@ body::before {
 
 .skill-list dt {
   color: var(--page-accent);
-  font-size: 0.84rem;
+  font-size: 0.92rem;
 }
 
 .skill-list dd {
@@ -614,15 +717,47 @@ body::before {
 .caption {
   margin: 1rem 0 0;
   color: var(--page-muted);
-  font-size: 0.84rem;
+  font-size: 0.92rem;
   line-height: 1.9;
+}
+
+.motif-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.motif-list li {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--page-line);
+  border-radius: 2px;
+  color: var(--page-ink);
+  font-size: 0.88rem;
+  letter-spacing: 0.08em;
 }
 
 .seal-row,
 .end-seal {
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 1rem;
   padding-top: 1.5rem;
+}
+
+.source-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 1.25rem;
+}
+
+.source-row .akane-source-chip {
+  font-size: 0.82rem;
 }
 
 .philosophy-grid,
@@ -682,7 +817,7 @@ body::before {
   padding-left: 0.9rem;
   border-left: 2px solid var(--page-accent);
   color: var(--page-muted);
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   line-height: 1.8;
 }
 
@@ -707,7 +842,7 @@ body::before {
   border: 1px solid var(--page-line);
   border-radius: 999px;
   color: var(--page-muted);
-  font-size: 0.74rem;
+  font-size: 0.92rem;
 }
 
 .work-card {
@@ -725,7 +860,7 @@ body::before {
   padding-top: 0.9rem;
   border-top: 1px dashed var(--page-line);
   color: var(--page-muted);
-  font-size: 0.86rem;
+  font-size: 0.94rem;
   line-height: 1.9;
 }
 
@@ -736,12 +871,12 @@ body::before {
 
 .work-actions .akane-ripple-btn {
   padding: 0.55rem 0.95rem;
-  font-size: 0.8rem;
+  font-size: 0.88rem;
 }
 
 .work-actions a {
   color: var(--page-accent);
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   text-decoration: none;
 }
 
@@ -765,7 +900,7 @@ body::before {
 
 .log-list time {
   color: var(--page-accent);
-  font-size: 0.84rem;
+  font-size: 0.92rem;
 }
 
 .log-list span {
@@ -801,7 +936,7 @@ body::before {
   border-top: 1px solid var(--page-line);
   background: var(--page-panel-strong);
   color: var(--page-muted);
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   letter-spacing: 0.1em;
 }
 
@@ -810,7 +945,10 @@ body::before {
   text-decoration: none;
 }
 
-[data-akane-phase='dawn'] .hero-main h1 {
+[data-akane-phase='dawn'] .hero-main h1,
+[data-akane-phase='morning'] .hero-main h1,
+[data-akane-phase='day'] .hero-main h1,
+[data-akane-phase='golden'] .hero-main h1 {
   text-shadow: none;
 }
 
